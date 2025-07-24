@@ -21,11 +21,17 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
 
+    // Obtener todos los usuarios
+    Route::get('/users', [AuthController::class, 'getAllUsers']);
+
     // Workspaces
     Route::apiResource('workspaces', WorkspaceController::class);
+    Route::get('workspaces/{id}/tasks', [WorkspaceController::class, 'getTasks']);
 
     // Teams
     Route::apiResource('teams', TeamController::class);
+    Route::get('teams/{id}/members', [TeamController::class, 'getMembers']);
+    Route::get('teams/{id}/tasks', [TeamController::class, 'getTasks']);
     Route::post('teams/{id}/add-member', [TeamController::class, 'addMember']);
     Route::delete('teams/{id}/remove-member/{userId}', [TeamController::class, 'removeMember']);
 

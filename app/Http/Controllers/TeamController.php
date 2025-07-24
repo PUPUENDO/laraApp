@@ -188,4 +188,41 @@ class TeamController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Obtener solo los miembros de un equipo.
+     */
+    public function getMembers(string $id)
+    {
+        $team = Team::findOrFail($id);
+
+        // Validar que el usuario sea miembro del equipo
+        if (!$team->users()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'error' => 'No perteneces a este equipo'], 403);
+        }
+
+        $members = $team->users()->select('users.id', 'users.first_name', 'users.last_name', 'users.email', 'team_user.role')->get();
+
+        return response()->json($members);
+    }
+
+    /**
+     * Obtener todas las tareas de un equipo específico.
+     */
+    public function getTasks(string $id)
+    {
+        $team = Team::findOrFail($id);
+
+        // Validar que el usuario sea miembro del equipo
+        if (!$team->users()->where('user_id', Auth::id())->exists()) {
+            return response()->json(['success' => false, 'error' => 'No perteneces a este equipo'], 403);
+        }
+
+        // Obtener las tareas del workspace de este equipo
+        $tasks = Task::where('workspace_id', $team->workspace_id)
+            ->with(['assignedUser', 'creator'])
+            ->get();
+
+        return response()->json($tasks);
+    }
 }

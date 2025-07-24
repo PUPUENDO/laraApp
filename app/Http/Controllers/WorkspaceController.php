@@ -91,4 +91,21 @@ class WorkspaceController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Obtener todas las tareas de un workspace específico.
+     */
+    public function getTasks(string $id)
+    {
+        $workspace = Workspace::findOrFail($id);
+
+        // Validar que el usuario autenticado sea el creador del workspace
+        if ($workspace->created_by !== Auth::id()) {
+            return response()->json(['success' => false, 'error' => 'No tienes permiso para ver las tareas de este workspace'], 403);
+        }
+
+        $tasks = $workspace->tasks()->with(['assignedUser', 'creator'])->get();
+
+        return response()->json($tasks);
+    }
 }

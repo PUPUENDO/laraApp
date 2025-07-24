@@ -67,4 +67,16 @@ class AuthController extends Controller
             'message' => 'Sesión cerrada correctamente'
         ]);
     }
+
+    /**
+     * Obtener todos los usuarios registrados.
+     */
+    public function getAllUsers()
+    {
+        $users = User::select('id', 'first_name', 'last_name', 'email', 'phone')
+            ->orderBy('first_name')
+            ->get();
+
+        return response()->json($users);
+    }
 }
