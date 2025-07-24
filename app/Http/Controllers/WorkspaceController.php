@@ -37,7 +37,7 @@ class WorkspaceController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return response()->json($workspace, 201);
+        return response()->json(['success' => true], 201);
     }
 
     /**
@@ -49,7 +49,7 @@ class WorkspaceController extends Controller
 
         // Validar que el usuario autenticado sea el creador
         if ($workspace->created_by !== Auth::id()) {
-            return response()->json(['error' => 'No tienes permiso para ver este workspace'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permiso para ver este workspace'], 403);
         }
 
         return response()->json($workspace);
@@ -63,7 +63,7 @@ class WorkspaceController extends Controller
         $workspace = Workspace::findOrFail($id);
 
         if ($workspace->created_by !== Auth::id()) {
-            return response()->json(['error' => 'No tienes permiso para actualizar este workspace'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permiso para actualizar este workspace'], 403);
         }
 
         $validated = $request->validate([
@@ -73,7 +73,7 @@ class WorkspaceController extends Controller
 
         $workspace->update($validated);
 
-        return response()->json($workspace);
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -84,11 +84,11 @@ class WorkspaceController extends Controller
         $workspace = Workspace::findOrFail($id);
 
         if ($workspace->created_by !== Auth::id()) {
-            return response()->json(['error' => 'No tienes permiso para eliminar este workspace'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permiso para eliminar este workspace'], 403);
         }
 
         $workspace->delete();
 
-        return response()->json(['message' => 'Workspace eliminado correctamente']);
+        return response()->json(['success' => true]);
     }
 }

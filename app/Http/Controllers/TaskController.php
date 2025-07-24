@@ -45,7 +45,7 @@ class TaskController extends Controller
             ->exists();
 
         if (!$isLeader) {
-            return response()->json(['error' => 'No tienes permisos para crear tareas en este equipo'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permisos para crear tareas en este equipo'], 403);
         }
 
         // Crear la tarea
@@ -59,7 +59,7 @@ class TaskController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return response()->json($task, 201);
+        return response()->json(['success' => true], 201);
     }
 
     /**
@@ -74,7 +74,7 @@ class TaskController extends Controller
             $task->assigned_to !== Auth::id() &&
             $task->creator->id !== Auth::id()
         ) {
-            return response()->json(['error' => 'No tienes permisos para ver esta tarea'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permisos para ver esta tarea'], 403);
         }
 
         return response()->json($task);
@@ -100,7 +100,7 @@ class TaskController extends Controller
         $isAssigned = $task->assigned_to === Auth::id();
 
         if (!$isLeader && !$isAssigned) {
-            return response()->json(['error' => 'No tienes permisos para actualizar esta tarea'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permisos para actualizar esta tarea'], 403);
         }
 
         if ($isLeader) {
@@ -123,7 +123,7 @@ class TaskController extends Controller
             $task->update($validated);
         }
 
-        return response()->json($task);
+        return response()->json(['success' => true]);
     }
 
     /**
@@ -141,11 +141,11 @@ class TaskController extends Controller
             })->exists();
 
         if (!$isLeader) {
-            return response()->json(['error' => 'No tienes permisos para eliminar esta tarea'], 403);
+            return response()->json(['success' => false, 'error' => 'No tienes permisos para eliminar esta tarea'], 403);
         }
 
         $task->delete();
 
-        return response()->json(['message' => 'Tarea eliminada correctamente']);
+        return response()->json(['success' => true]);
     }
 }
