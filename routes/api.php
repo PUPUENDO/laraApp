@@ -11,6 +11,10 @@ use App\Http\Controllers\TaskController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 
+// Rutas de recuperación de contraseña
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
 // Rutas protegidas por Sanctum
 Route::middleware('auth:sanctum')->group(function () {
     // Logout
