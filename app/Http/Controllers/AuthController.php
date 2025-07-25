@@ -129,25 +129,39 @@ class AuthController extends Controller
                     'expiresAt' => Carbon::now()->addHour()->format('Y-m-d H:i:s')
                 ];
 
-                // Si MAIL_MAILER es 'log', solo registrar en logs
-                if (env('MAIL_MAILER') === 'log') {
-                    Log::info('=== PASSWORD RESET EMAIL ===');
-                    Log::info('Para: ' . $validated['email']);
-                    Log::info('Usuario: ' . $user->first_name . ' ' . $user->last_name);
-                    Log::info('Token: ' . $token);
-                    Log::info('URL de Reset: ' . $resetUrl);
-                    Log::info('Expira: ' . $emailData['expiresAt']);
-                    Log::info('=============================');
+                // Registrar información en logs para debugging
+                Log::info('=== PASSWORD RESET EMAIL ===');
+                Log::info('Para: ' . $validated['email']);
+                Log::info('Usuario: ' . $user->first_name . ' ' . $user->last_name);
+                Log::info('Token: ' . $token);
+                Log::info('URL de Reset: ' . $resetUrl);
+                Log::info('Expira: ' . $emailData['expiresAt']);
+                Log::info('MAIL_MAILER: ' . env('MAIL_MAILER'));
+                Log::info('MAIL_HOST: ' . env('MAIL_HOST'));
+                Log::info('MAIL_FROM_ADDRESS: ' . env('MAIL_FROM_ADDRESS'));
+                Log::info('=============================');
+
+                // Verificar configuración de correo
+                $mailConfig = config('mail.default');
+                Log::info('Mail config driver: ' . $mailConfig);
+                
+                // Enviar email usando la configuración del .env
+                try {
+                    Mail::html(
+                        $this->buildResetEmailTemplate($emailData),
+                        function ($message) use ($validated, $user) {
+                            $message->to($validated['email'], $user->first_name . ' ' . $user->last_name)
+                                    ->subject('Recuperación de Contraseña - Laravel SMTP')
+                                    ->from(config('mail.from.address'), 'Laravel SMTP');
+                        }
+                    );
                     
                     $emailSent = true;
-                } else {
-                    // Enviar email real
-                    Mail::send('emails.password-reset', $emailData, function ($message) use ($validated, $user) {
-                        $message->to($validated['email'], $user->first_name . ' ' . $user->last_name)
-                                ->subject('Recuperación de Contraseña - ' . env('APP_NAME'));
-                    });
+                    Log::info('Email enviado exitosamente');
                     
-                    $emailSent = true;
+                } catch (\Exception $mailSendException) {
+                    Log::error('Error específico al enviar email: ' . $mailSendException->getMessage());
+                    throw $mailSendException;
                 }
 
                 if ($emailSent) {
@@ -264,5 +278,60 @@ class AuthController extends Controller
                 'message' => 'Ocurrió un error al restablecer la contraseña'
             ], 500);
         }
+    }
+
+    /**
+     * Construir el template de email para reset de contraseña.
+     */
+    private function buildResetEmailTemplate($data)
+    {
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Recuperación de Contraseña</title>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #4f46e5; color: white; padding: 20px; text-align: center; }
+                .content { padding: 30px; background: #f9f9f9; }
+                .button { display: inline-block; padding: 12px 24px; background: #4f46e5; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                .footer { text-align: center; font-size: 12px; color: #666; margin-top: 30px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Recuperación de Contraseña</h1>
+                </div>
+                <div class="content">
+                    <p>Hola <strong>' . $data['user']->first_name . ' ' . $data['user']->last_name . '</strong>,</p>
+                    
+                    <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+                    
+                    <p>Haz clic en el siguiente botón para crear una nueva contraseña:</p>
+                    
+                    <p style="text-align: center;">
+                        <a href="' . $data['resetUrl'] . '" class="button">Restablecer Contraseña</a>
+                    </p>
+                    
+                    <p>O copia y pega este enlace en tu navegador:</p>
+                    <p style="word-break: break-all; background: #e5e7eb; padding: 10px; border-radius: 5px;">
+                        ' . $data['resetUrl'] . '
+                    </p>
+                    
+                    <p><strong>Este enlace expirará el ' . $data['expiresAt'] . '</strong></p>
+                    
+                    <p>Si no solicitaste este restablecimiento, puedes ignorar este email. Tu contraseña no será cambiada.</p>
+                </div>
+                <div class="footer">
+                    <p>© ' . date('Y') . ' ' . config('app.name') . '. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </body>
+        </html>';
+        
+        return $html;
     }
 }
