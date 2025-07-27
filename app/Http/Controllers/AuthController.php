@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Team;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -83,6 +84,34 @@ class AuthController extends Controller
             ->get();
 
         return response()->json($users);
+    }
+
+    /**
+     * Obtener usuarios disponibles para agregar a un equipo específico.
+     */
+    public function getAvailableUsers(string $teamId)
+    {
+        $team = Team::findOrFail($teamId);
+
+        // Verificar que el usuario autenticado sea miembro del equipo
+        if (!$team->users()->where('user_id', Auth::id())->exists()) {
+            return response()->json([
+                'success' => false, 
+                'error' => 'No tienes permisos para ver los usuarios disponibles para este equipo'
+            ], 403);
+        }
+
+        // Obtener usuarios que NO están en el equipo
+        $availableUsers = User::select('id', 'first_name', 'last_name', 'email')
+            ->whereNotIn('id', function($query) use ($teamId) {
+                $query->select('user_id')
+                      ->from('team_user')
+                      ->where('team_id', $teamId);
+            })
+            ->orderBy('first_name')
+            ->get();
+
+        return response()->json($availableUsers);
     }
 
     /**

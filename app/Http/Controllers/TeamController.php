@@ -139,7 +139,7 @@ class TeamController extends Controller
     }
 
     /**
-     * Añadir miembro al equipo (solo líder).
+     * Agregar miembro al equipo (solo líder).
      */
     public function addMember(Request $request, string $id)
     {
@@ -160,12 +160,15 @@ class TeamController extends Controller
             return response()->json(['success' => false, 'error' => 'No tienes permisos para agregar miembros'], 403);
         }
 
-        // Agregar miembro
-        $team->users()->syncWithoutDetaching([
-            $validated['user_id'] => ['role' => $validated['role']]
-        ]);
+        // Verificar que el usuario no esté ya en el equipo
+        if ($team->users()->where('user_id', $validated['user_id'])->exists()) {
+            return response()->json(['success' => false, 'error' => 'El usuario ya es miembro del equipo'], 409);
+        }
 
-        return response()->json(['success' => true]);
+        // Agregar miembro
+        $team->users()->attach($validated['user_id'], ['role' => $validated['role']]);
+
+        return response()->json(['success' => true, 'message' => 'Miembro agregado exitosamente']);
     }
 
     /**
@@ -184,9 +187,22 @@ class TeamController extends Controller
             return response()->json(['success' => false, 'error' => 'No tienes permisos para eliminar miembros'], 403);
         }
 
+        // Verificar que el usuario esté en el equipo
+        if (!$team->users()->where('user_id', $userId)->exists()) {
+            return response()->json(['success' => false, 'error' => 'El usuario no es miembro del equipo'], 404);
+        }
+
+        // No permitir que el líder se remueva a sí mismo si es el único líder
+        if ($userId == Auth::id()) {
+            $leaderCount = $team->users()->where('role', 'leader')->count();
+            if ($leaderCount <= 1) {
+                return response()->json(['success' => false, 'error' => 'No puedes removerte como último líder del equipo'], 400);
+            }
+        }
+
         $team->users()->detach($userId);
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => 'Miembro removido exitosamente']);
     }
 
     /**

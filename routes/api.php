@@ -27,17 +27,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Obtener todos los usuarios
     Route::get('/users', [AuthController::class, 'getAllUsers']);
+    
+    // Usuarios disponibles para equipo
+    Route::get('/users/available/{teamId}', [AuthController::class, 'getAvailableUsers']);
 
-    // Workspaces
-    Route::apiResource('workspaces', WorkspaceController::class);
+    // Workspaces - rutas específicas ANTES del resource
+    Route::get('workspaces/member', [WorkspaceController::class, 'getMemberWorkspaces']);
     Route::get('workspaces/{id}/tasks', [WorkspaceController::class, 'getTasks']);
+    Route::apiResource('workspaces', WorkspaceController::class);
 
     // Teams
     Route::apiResource('teams', TeamController::class);
     Route::get('teams/{id}/members', [TeamController::class, 'getMembers']);
     Route::get('teams/{id}/tasks', [TeamController::class, 'getTasks']);
-    Route::post('teams/{id}/add-member', [TeamController::class, 'addMember']);
-    Route::delete('teams/{id}/remove-member/{userId}', [TeamController::class, 'removeMember']);
+    Route::post('teams/{id}/members', [TeamController::class, 'addMember']);
+    Route::delete('teams/{id}/members/{userId}', [TeamController::class, 'removeMember']);
 
     // Tasks
     Route::apiResource('tasks', TaskController::class);

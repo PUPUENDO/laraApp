@@ -41,18 +41,31 @@ class WorkspaceController extends Controller
     }
 
     /**
-     * Mostrar un workspace específico y sus datos relacionados.
+     * Mostrar un workspace específico.
      */
     public function show(string $id)
     {
-        $workspace = Workspace::with('teams.users', 'tasks')->findOrFail($id);
+        $workspace = Workspace::with(['teams'])->findOrFail($id);
 
-        // Validar que el usuario autenticado sea el creador
-        if ($workspace->created_by !== Auth::id()) {
-            return response()->json(['success' => false, 'error' => 'No tienes permiso para ver este workspace'], 403);
+        // Verificar si el usuario es el creador del workspace
+        if ($workspace->created_by === Auth::id()) {
+            return response()->json($workspace);
         }
 
-        return response()->json($workspace);
+        // Verificar si el usuario es miembro de algún equipo en este workspace
+        $isMember = $workspace->teams()->whereHas('users', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->exists();
+
+        if ($isMember) {
+            return response()->json($workspace);
+        }
+
+        // Si no es creador ni miembro, denegar acceso
+        return response()->json([
+            'success' => false,
+            'error' => 'No tienes permisos para ver este workspace'
+        ], 403);
     }
 
     /**
@@ -92,20 +105,56 @@ class WorkspaceController extends Controller
         return response()->json(['success' => true]);
     }
 
-    /**
+        /**
      * Obtener todas las tareas de un workspace específico.
      */
     public function getTasks(string $id)
     {
         $workspace = Workspace::findOrFail($id);
 
-        // Validar que el usuario autenticado sea el creador del workspace
-        if ($workspace->created_by !== Auth::id()) {
-            return response()->json(['success' => false, 'error' => 'No tienes permiso para ver las tareas de este workspace'], 403);
+        // Verificar si el usuario es el creador del workspace
+        if ($workspace->created_by === Auth::id()) {
+            $tasks = Task::where('workspace_id', $id)
+                ->with(['assignedUser', 'creator'])
+                ->get();
+            return response()->json($tasks);
         }
 
-        $tasks = $workspace->tasks()->with(['assignedUser', 'creator'])->get();
+        // Verificar si el usuario es miembro de algún equipo en este workspace
+        $isMember = $workspace->teams()->whereHas('users', function ($query) {
+            $query->where('user_id', Auth::id());
+        })->exists();
 
-        return response()->json($tasks);
+        if ($isMember) {
+            $tasks = Task::where('workspace_id', $id)
+                ->with(['assignedUser', 'creator'])
+                ->get();
+            return response()->json($tasks);
+        }
+
+        // Si no es creador ni miembro, denegar acceso
+        return response()->json([
+            'success' => false,
+            'error' => 'No tienes permisos para ver las tareas de este workspace'
+        ], 403);
+    }
+
+    /**
+     * Obtener workspaces donde el usuario autenticado es miembro.
+     */
+    public function getMemberWorkspaces()
+    {
+        $workspaces = Workspace::whereHas('teams.users', function ($query) {
+            $query->where('user_id', Auth::id());
+        })
+            ->with(['teams' => function ($query) {
+                $query->whereHas('users', function ($subQuery) {
+                    $subQuery->where('user_id', Auth::id());
+                });
+            }])
+            ->distinct()
+            ->get();
+
+        return response()->json($workspaces);
     }
 }
