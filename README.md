@@ -1,6 +1,6 @@
 # API de Gestión de Tareas y Equipos - Laravel
 
-Una API REST desarrollada en Laravel para la gestión de workspaces, equipos y tareas, permitiendo la colaboración entre usuarios con diferentes roles para la pagina web Kanban.
+Una API REST desarrollada en Laravel para la gestión de workspaces, equipos y tareas, permitiendo la colaboración entre usuarios con diferentes roles para la pagina web KanbanFlow.
 
 ---
 
