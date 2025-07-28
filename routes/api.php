@@ -33,13 +33,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Workspaces - rutas específicas ANTES del resource
     Route::get('workspaces/member', [WorkspaceController::class, 'getMemberWorkspaces']);
-    Route::get('workspaces/{id}/tasks', [WorkspaceController::class, 'getTasks']);
+    Route::get('workspaces/{id}/tasks', [TaskController::class, 'getWorkspaceTasks']);
     Route::apiResource('workspaces', WorkspaceController::class);
 
     // Teams
     Route::apiResource('teams', TeamController::class);
     Route::get('teams/{id}/members', [TeamController::class, 'getMembers']);
-    Route::get('teams/{id}/tasks', [TeamController::class, 'getTasks']);
+    Route::get('teams/{id}/tasks', [TaskController::class, 'getTeamTasks']);
     Route::post('teams/{id}/members', [TeamController::class, 'addMember']);
     Route::delete('teams/{id}/members/{userId}', [TeamController::class, 'removeMember']);
 

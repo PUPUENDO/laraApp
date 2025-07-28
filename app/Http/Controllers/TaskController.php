@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Team;
+use App\Models\Workspace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -147,5 +148,62 @@ class TaskController extends Controller
         $task->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Obtener todas las tareas de un workspace (para líderes).
+     */
+    public function getWorkspaceTasks($workspaceId)
+    {
+        // Verificar que el workspace existe
+        $workspace = Workspace::findOrFail($workspaceId);
+        
+        // Verificar que el usuario tenga permisos para ver las tareas del workspace
+        $hasAccess = $workspace->created_by === Auth::id() || 
+                     $workspace->teams()->whereHas('users', function ($query) {
+                         $query->where('user_id', Auth::id());
+                     })->exists();
+
+        if (!$hasAccess) {
+            return response()->json([
+                'success' => false, 
+                'error' => 'No tienes permisos para ver las tareas de este workspace'
+            ], 403);
+        }
+
+        // Obtener todas las tareas del workspace
+        $tasks = Task::where('workspace_id', $workspaceId)
+            ->with(['workspace', 'assignedUser', 'creator'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($tasks);
+    }
+
+    /**
+     * Obtener todas las tareas de un equipo (para miembros del equipo).
+     */
+    public function getTeamTasks($teamId)
+    {
+        // Verificar que el equipo existe
+        $team = Team::findOrFail($teamId);
+        
+        // Verificar que el usuario sea miembro del equipo
+        $isMember = $team->users()->where('user_id', Auth::id())->exists();
+
+        if (!$isMember) {
+            return response()->json([
+                'success' => false, 
+                'error' => 'No tienes permisos para ver las tareas de este equipo'
+            ], 403);
+        }
+
+        // Obtener todas las tareas del workspace del equipo
+        $tasks = Task::where('workspace_id', $team->workspace_id)
+            ->with(['workspace', 'assignedUser', 'creator'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json($tasks);
     }
 }
