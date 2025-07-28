@@ -39,7 +39,7 @@ Esta API tiene como objetivo crear un sistema completo de gestión de proyectos 
 
 ## Guía de Uso Rápido
 
-### 🔑 **1. AUTENTICACIÓN (OBLIGATORIO)**
+###  **1. AUTENTICACIÓN (OBLIGATORIO)**
 
 ```bash
 # Registro de usuario
@@ -67,7 +67,7 @@ Headers: {
 }
 ```
 
-### 🏢 **2. FLUJO DE TRABAJO (ORDEN OBLIGATORIO)**
+###  **2. FLUJO DE TRABAJO (ORDEN OBLIGATORIO)**
 
 ```bash
 # PASO 1: Crear workspace (PRIMERO)
@@ -114,7 +114,7 @@ PUT /api/tasks/1
 # Respuesta: { "success": true }
 ```
 
-### 👤 **3. ROLES Y PERMISOS**
+###  **3. ROLES Y PERMISOS**
 
 **CREADOR DE WORKSPACE:**
 - ✅ Puede crear/editar/eliminar workspace
@@ -156,7 +156,7 @@ GET /api/users
 GET /api/workspaces/1/tasks
 ```
 
-### ⚠️ **5. RESPUESTAS DE LA API**
+###  **5. RESPUESTAS DE LA API**
 
 ```json
 // ÉXITO en operaciones (crear, editar, eliminar)
@@ -278,7 +278,7 @@ login   created_by  members  assigned_to
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
 - **Autenticación y autorización** con Laravel Sanctum
 - **Gestión de workspaces** (espacios de trabajo)
@@ -287,7 +287,7 @@ login   created_by  members  assigned_to
 - **Control de permisos** basado en roles
 - **API RESTful** con respuestas consistentes
 
-## 🏗️ Arquitectura del Sistema
+##  Arquitectura del Sistema
 
 ### Modelos Principales
 
@@ -337,9 +337,9 @@ login   created_by  members  assigned_to
 - **Relationships** - Relaciones entre modelos (Many-to-Many, Has-Many)
 - **Seeders** - Datos de prueba
 
-## 📂 Estructura Detallada del Proyecto
+##  Estructura Detallada del Proyecto
 
-### 🗄️ **Carpeta de Migraciones** (`database/migrations/`)
+###  **Carpeta de Migraciones** (`database/migrations/`)
 
 Las migraciones definen la estructura de la base de datos y permiten versionar los cambios del esquema:
 
@@ -383,7 +383,7 @@ Las migraciones definen la estructura de la base de datos y permiten versionar l
 └── Campos: id, tokenable_type, tokenable_id, name, token, abilities, expires_at
 ```
 
-### 🎮 **Carpeta de Controladores** (`app/Http/Controllers/`)
+### **Carpeta de Controladores** (`app/Http/Controllers/`)
 
 Los controladores manejan la lógica de negocio y procesan las peticiones HTTP:
 
@@ -492,7 +492,7 @@ Funcionalidades principales:
     └── Respuesta: success: true
 ```
 
-### 🏗️ **Carpeta de Modelos** (`app/Models/`)
+### **Carpeta de Modelos** (`app/Models/`)
 
 Los modelos definen las relaciones y comportamientos de las entidades:
 
@@ -546,7 +546,7 @@ Características principales:
     └── creator(): belongsTo(User, 'created_by')
 ```
 
-### 🔄 **Flujo de Datos Entre Componentes**
+###  **Flujo de Datos Entre Componentes**
 
 ```
 1. Migración → Crea tabla en BD
@@ -558,7 +558,7 @@ Características principales:
 7. Respuesta → JSON con success/data
 ```
 
-## 📋 Rutas Completas de la API
+##  Rutas Completas de la API
 
 ### Autenticación
 ```
@@ -601,7 +601,7 @@ PUT    /api/tasks/{id}  - Actualizar tarea
 DELETE /api/tasks/{id}  - Eliminar tarea (solo líderes)
 ```
 
-## 📁 Estructura de Controladores
+##  Estructura de Controladores
 
 ### 1. **AuthController**
 ```php
@@ -647,7 +647,7 @@ PUT    /api/tasks/{id}  - Actualizar tarea
 DELETE /api/tasks/{id}  - Eliminar tarea (solo líderes)
 ```
 
-## 🔐 Sistema de Permisos
+##  Sistema de Permisos
 
 ### Roles de Usuario
 
@@ -697,7 +697,7 @@ id, team_id, user_id, role
 id, title, description, progress, is_done, workspace_id, assigned_to, created_by, created_at, updated_at
 ```
 
-## 🔄 Flujo de Trabajo Típico
+##  Flujo de Trabajo Típico
 
 ### 1. **Para Administradores/Líderes:**
 1. Registrarse/Iniciar sesión
@@ -739,7 +739,7 @@ id, title, description, progress, is_done, workspace_id, assigned_to, created_by
 }
 ```
 
-## 🚀 Instalación y Configuración
+##  Instalación y Configuración
 
 ### Prerrequisitos
 - PHP 8.2+
@@ -781,7 +781,7 @@ php artisan migrate
 php artisan serve
 ```
 
-## 🧪 Testing
+##  Testing
 
 ### Rutas de Prueba
 - **Base URL:** `http://localhost:8000/api`
@@ -804,7 +804,7 @@ headers: {
 }
 ```
 
-## 📈 Características de Seguridad
+##  Características de Seguridad
 
 - **Validación de entrada** en todos los endpoints
 - **Autenticación requerida** para todas las operaciones
